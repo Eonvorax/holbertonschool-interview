@@ -57,8 +57,9 @@ if __name__ == "__main__":
         print("Usage: nqueens N")
         exit(1)
 
-    n = int(sys.argv[1])
-    if not isinstance(n, int):
+    try:
+        n = int(sys.argv[1])
+    except ValueError:
         print("N must be a number")
         exit(1)
 
