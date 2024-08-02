@@ -1,0 +1,2 @@
+# nqueens
+Algorithms - N Queens
