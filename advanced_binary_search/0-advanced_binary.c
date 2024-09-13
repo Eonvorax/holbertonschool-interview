@@ -38,29 +38,21 @@ int recursive_binary(int *array, size_t left, size_t right, int value)
 	if (left > right)
 		return (-1);
 
-	size_t mid = left + (right - left) / 2;
-
 	print_sub_array(array, left, right);
 
-	if (array[mid] > value)
-	{
-		/* Search in the left half */
-		return (recursive_binary(array, left, mid - 1, value));
-	}
-	else if (array[mid] < value)
-	{
-		/* Search in the right half */
-		return (recursive_binary(array, mid + 1, right, value));
-	}
+	size_t mid = left + (right - left) / 2;
 
-	if (array[mid - 1] == value)
-	{
-		/* Found a match, keep searching for the leftmost value */
+	/* Check if mid is the leftmost occurence */
+	if (array[mid] == value && (mid == left || array[mid - 1] != value))
+		return (mid);
+
+	/* Keep searching the left half */
+	if (array[mid] >= value)
 		return (recursive_binary(array, left, mid, value));
-	}
-	return (mid);
-}
 
+	/* Keep searching in the right half */
+	return (recursive_binary(array, mid + 1, right, value));
+}
 
 /**
  * advanced_binary - Initiates the recursive binary search
