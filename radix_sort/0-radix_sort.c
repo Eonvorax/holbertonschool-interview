@@ -1,51 +1,61 @@
 #include "sort.h"
 
 /**
+ * get_max - gets the maximum int element of an array
+ * @array: array to search
+ * @size: length of the array
  *
+ * Return: int value of maximum element in the array
  */
 int get_max(int *array, size_t size)
 {
-    int max = array[0];
-    for (size_t i = 1; i < size; i++)
-        if (array[i] > max)
-            max = array[i];
-    return (max);
+	int max = array[0];
+
+	for (size_t i = 1; i < size; i++)
+		if (array[i] > max)
+			max = array[i];
+	return (max);
 }
 
 /**
  * lsd_count_sort - counting sort of array
+ * @array: array to sort
+ * @size: length of the array to sort
+ * @lsd: power of 10 representing the least significant digit
  *
  */
 void lsd_count_sort(int *array, size_t size, int lsd)
 {
-    int output[size];       // Output array
-    int count[10] = {0}; // Initialize count array as 0
-    size_t i;
+	int *output;
+	int count[10] = {0};  /* Initialize counting array at 0 */
+	size_t i;
+	ssize_t j;
 
-    // Store count of occurrences in count[]
-    for (i = 0; i < size; i++)
-        count[(array[i] / lsd) % 10]++;
+	output = malloc(size * sizeof(int));
+	if (!output)
+		return;
 
-    // Change count[i] so that count[i] now
-    // contains actual position of this digit
-    // in output[]
-    for (i = 1; i < 10; i++)
-        count[i] += count[i - 1];
+	/* Store count of occurrences in count[] */
+	for (i = 0; i < size; i++)
+		count[(array[i] / lsd) % 10]++;
 
-    // Build the output array
-    for (i = size; i > 0; i--)
-    {
-        output[count[(array[i] / lsd) % 10] - 1] = array[i];
-        count[(array[i] / lsd) % 10]--;
-    }
+	/* store into count[i] actual position of this digit in output[] */
+	for (i = 1; i < 10; i++)
+		count[i] += count[i - 1];
 
-    // Copy the output array to arr[],
-    // so that arr[] now contains sorted
-    // numbers according to current digit
-    for (i = 0; i < size; i++)
-        array[i] = output[i];
+	/* Build the output array */
+	for (j = size - 1; j >= 0; j--)
+	{
+		output[count[(array[j] / lsd) % 10] - 1] = array[j];
+		count[(array[j] / lsd) % 10]--;
+	}
 
-    print_array(array, size);
+	/* Copy the now sorted output array to the original array */
+	for (i = 0; i < size; i++)
+		array[i] = output[i];
+
+	print_array(array, size);
+	free(output);
 }
 
 /**
@@ -56,15 +66,15 @@ void lsd_count_sort(int *array, size_t size, int lsd)
  */
 void radix_sort(int *array, size_t size)
 {
-    size_t lsd;
+	int lsd;
 
-    if (size < 2)
-        return;
+	if (size < 2)
+		return;
 
-    int max = get_max(array, size);
+	int max = get_max(array, size);
 
-    for (lsd = 1; max / lsd > 0; lsd *= 10)
-    {
-        lsd_count_sort(array, size, lsd);
-    }
+	for (lsd = 1; max / lsd > 0; lsd *= 10)
+	{
+		lsd_count_sort(array, size, lsd);
+	}
 }
