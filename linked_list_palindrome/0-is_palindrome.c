@@ -1,47 +1,67 @@
 #include "lists.h"
 
 /**
- * is_palindrome - Checks if a singly linked list is a palindrome.
- * @head: pointer to the head of the list
+ * reverse_list - Reverses a singly linked list.
+ * @head: Pointer to the head of the list.
  *
- * Return: 0 if it is not a palindrome, 1 if it is a palindrome
+ * Return: Pointer to the new head of the reversed list.
+ */
+listint_t *reverse_list(listint_t *head)
+{
+	listint_t *prev = NULL, *next = NULL;
+
+	while (head)
+	{
+		next = head->next;
+		head->next = prev;
+		prev = head;
+		head = next;
+	}
+
+	return (prev);
+}
+
+/**
+ * is_palindrome - Checks if a singly linked list is a palindrome.
+ * @head: Double pointer to the head of the list.
+ *
+ * Return: 1 if the list is a palindrome, 0 otherwise.
  */
 int is_palindrome(listint_t **head)
 {
-	if (head == NULL || *head == NULL)
+	/* Any empty or single-node list is a palindrome */
+	if (!head || !*head || !(*head)->next)
+		return (1);
+
+	listint_t *slow = *head, *fast = *head, *first_half, *second_half;
+
+	/* Use slow and fast pointers to find the middle of the list */
+	while (fast && fast->next)
 	{
-		return (1); /* An empty list counts as a palindrome */
+		slow = slow->next;
+		fast = fast->next->next;
 	}
 
-	listint_t *rev_head = NULL;
-	listint_t *node = *head;
+	/* Reverse the second half of the list */
+	second_half = reverse_list(slow);
+	first_half = *head;
 
-	/* Build a reversed linked list copy */
-	while (node != NULL)
+	/* Compare the first half and the reversed second half */
+	listint_t *temp = second_half;
+
+	while (temp)
 	{
-		/* Clean up if memory allocation fails */
-		if (add_nodeint_end(&rev_head, node->n) == NULL)
+		if (first_half->n != temp->n)
 		{
-			free_listint(rev_head);
+			/* Restore the list before returning */
+			reverse_list(second_half);
 			return (0);
 		}
-		node = node->next;
+		first_half = first_half->next;
+		temp = temp->next;
 	}
 
-	/* Compare the original and reversed lists */
-	node = *head;
-	listint_t *rev_node = rev_head;
-
-	while (node != NULL && rev_node != NULL)
-	{
-		if (node->n != rev_node->n)
-		{
-			free_listint(rev_head);
-			return (0);
-		}
-		node = node->next;
-		rev_node = rev_node->next;
-	}
-	free_listint(rev_head);
+	/* Restore the list to its original state and return */
+	reverse_list(second_half);
 	return (1);
 }
