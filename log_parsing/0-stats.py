@@ -1,60 +1,57 @@
 #!/usr/bin/python3
 """
-Log parsing
+Script that reads stdin line by line and computes metrics.
 """
-import sys
 
+if __name__ == '__main__':
 
-def print_statistics():
-    """
-    Print accumulated statistics.
-    """
-    print(f"File size: {total_file_size}")
-    for code in sorted(status_code_counts.keys()):
-        if status_code_counts[code] > 0:
-            print(f"{code}: {status_code_counts[code]}")
-    sys.stdout.flush()  # Ensure the output is immediately visible
+    import sys
 
+    def print_results(statusCodes, fileSize):
+        """
+        Print accumulated statistics.
+        """
+        print(f"File size: {fileSize}")
+        for statusCode, times in sorted(statusCodes.items()):
+            if times:
+                print(f"{statusCode}: {times}")
 
-def process_line(line):
-    """
-    Parse a log line and update metrics.
-    """
-    global total_file_size
-    try:
-        # Parse line into parts
-        parts = line.split()
-        if len(parts) < 2:
-            return  # Skip invalid line
-
-        # Extract and validate components
-        status_code = int(parts[-2])  # Status code
-        file_size = int(parts[-1])   # File size
-
-        # Update metrics
-        if status_code in status_code_counts:
-            status_code_counts[status_code] += 1
-        total_file_size += file_size
-    except (IndexError, ValueError):
-        pass  # Skip invalid lines
-
-if __name__ == "__main__":
-    # Initialize metrics
-    total_file_size = 0
-    status_code_counts = {200: 0, 301: 0, 400: 0,
-                          401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-    line_count = 0
+    # Initialize dictionary to store counts of status codes
+    statusCodes = {
+        "200": 0,
+        "301": 0,
+        "400": 0,
+        "401": 0,
+        "403": 0,
+        "404": 0,
+        "405": 0,
+        "500": 0
+    }
+    # Initialize total file size and line counter
+    fileSize = 0
+    n_lines = 0
 
     try:
+        # Read stdin line by line
         for line in sys.stdin:
-            process_line(line.strip())
-            line_count += 1
-            if line_count % 10 == 0:
-                print_statistics()
-    except KeyboardInterrupt:
-        # Print statistics on interruption
-        print_statistics()
-        raise
-    finally:
+            # Print statistics after every 10 lines
+            if n_lines != 0 and n_lines % 10 == 0:
+                print_results(statusCodes, fileSize)
+            n_lines += 1
+            data = line.split()
+            if len(data) >= 2:
+                try:
+                    # Parse and compute metrics
+                    statusCode = data[-2]
+                    if statusCode in statusCodes:
+                        statusCodes[statusCode] += 1
+                    fileSize += int(data[-1])
+                except (IndexError, ValueError):
+                    # Skip lines with invalid formats
+                    continue
         # Print final statistics at EOF
-        print_statistics()
+        print_results(statusCodes, fileSize)
+    except KeyboardInterrupt:
+        # Print statistics on keyboard interruption (Ctrl+C)
+        print_results(statusCodes, fileSize)
+        raise
