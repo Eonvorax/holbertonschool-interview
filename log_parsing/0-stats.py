@@ -3,7 +3,6 @@
 Log parsing
 """
 import sys
-import signal
 
 
 def print_statistics():
@@ -22,11 +21,10 @@ def process_line(line):
     Parse a log line and update metrics.
     """
     global total_file_size
-    global total_file_size
     try:
         # Parse line into parts
         parts = line.split()
-        if len(parts) < 7:
+        if len(parts) < 2:
             return  # Skip invalid line
 
         # Extract and validate components
@@ -37,17 +35,8 @@ def process_line(line):
         if status_code in status_code_counts:
             status_code_counts[status_code] += 1
         total_file_size += file_size
-    except ValueError:
-        pass  # Skip lines with invalid status_code or file_size
-
-
-def signal_handler(sig, frame):
-    """
-    Handle keyboard interrupt (Ctrl + C) gracefully.
-    """
-    print_statistics()
-    sys.exit(0)
-
+    except (IndexError, ValueError):
+        pass  # Skip invalid lines
 
 if __name__ == "__main__":
     # Initialize metrics
@@ -56,18 +45,16 @@ if __name__ == "__main__":
                           401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
     line_count = 0
 
-    # Register signal handler for Ctrl + C
-    signal.signal(signal.SIGINT, signal_handler)
-
-    # Process stdin line by line
     try:
         for line in sys.stdin:
             process_line(line.strip())
             line_count += 1
             if line_count % 10 == 0:
                 print_statistics()
-    except Exception as e:
-        sys.stderr.write(f"Error: {e}\n")
+    except KeyboardInterrupt:
+        # Print statistics on interruption
+        print_statistics()
+        raise
     finally:
         # Print final statistics at EOF
         print_statistics()
