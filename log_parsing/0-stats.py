@@ -14,6 +14,7 @@ def print_statistics():
     for code in sorted(status_code_counts.keys()):
         if status_code_counts[code] > 0:
             print(f"{code}: {status_code_counts[code]}")
+    sys.stdout.flush()  # Ensure the output is immediately visible
 
 
 def process_line(line):
@@ -21,23 +22,23 @@ def process_line(line):
     Parse a log line and update metrics.
     """
     global total_file_size
+    global total_file_size
     try:
-        # Parse line according to the given format
+        # Parse line into parts
         parts = line.split()
         if len(parts) < 7:
             return  # Skip invalid line
-        ip, _, _, date, request, status_code, file_size = parts[0], parts[1],
-        parts[2], parts[3], parts[4], parts[-2], parts[-1]
 
-        # Validate and process status code and file size
-        status_code = int(status_code)
-        file_size = int(file_size)
+        # Extract and validate components
+        status_code = int(parts[-2])  # Status code
+        file_size = int(parts[-1])   # File size
 
+        # Update metrics
         if status_code in status_code_counts:
             status_code_counts[status_code] += 1
         total_file_size += file_size
-    except Exception:
-        pass  # Ignore lines that don't match the format
+    except ValueError:
+        pass  # Skip lines with invalid status_code or file_size
 
 
 def signal_handler(sig, frame):
@@ -67,3 +68,6 @@ if __name__ == "__main__":
                 print_statistics()
     except Exception as e:
         sys.stderr.write(f"Error: {e}\n")
+    finally:
+        # Print final statistics at EOF
+        print_statistics()
