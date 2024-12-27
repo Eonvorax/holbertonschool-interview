@@ -1,0 +1,2 @@
+# primegame
+Algorithms - Prime game
